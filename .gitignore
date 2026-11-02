@@ -43,6 +43,9 @@ artifacts/
 .coverage
 htmlcov/
 
+# Automatically generated evaluation runs
+/data/evaluation/runs/
+
 
 # Ignoring private files
 RAGme.txt

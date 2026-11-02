@@ -1,4 +1,4 @@
-# 4. RAG Generation and Hallucination Mitigation
+# 6. RAG Generation and Hallucination Mitigation
 
 ## Problem
 
@@ -132,6 +132,36 @@ The application will maintain the mapping between source identifiers and the ori
 Generated citation identifiers will be validated against this mapping.
 
 Citation validation confirms that referenced sources exist; it does not independently establish that a source supports a particular claim.
+
+
+### Conversational Query Routing
+
+**Module:** `src/agentic_rag/generation/query_router.py`  
+**Function:** `conversational_response()`
+
+**Integration:** `src/agentic_rag/generation/rag_service.py`, `RAGService.ask()`
+
+The RAG service checks for a limited set of conversational messages after sensitive-input screening and before document retrieval.
+
+Recognized greetings and courtesy messages receive predefined responses without invoking the retriever or LLM.
+
+These responses use the status `conversational` and contain no source citations.
+
+**Design rationale**
+
+Greetings and simple conversational messages do not require financial-policy evidence. Passing them through dense retrieval may produce irrelevant passages, after which the LLM may generate a natural response without citations.
+
+A deterministic conversational handler avoids unnecessary model calls and prevents these predefined responses from incorrectly failing citation-identifier validation.
+
+**Limitations**
+
+The handler recognizes only explicitly defined conversational expressions. It does not provide general intent classification or reliably identify all out-of-scope questions.
+
+Unrecognized queries continue through the existing RAG pipeline.
+
+General query-scope classification and evidence-sufficiency evaluation remain separate development tasks.
+
+
 
 ## Evaluation Strategy
 

@@ -166,3 +166,36 @@ def test_output_screening_blocks_sensitive_response(monkeypatch):
     assert result.json()["status"] == "blocked"
     assert result.json()["sources"] == []
     assert "customer@example.com" not in result.json()["answer"]
+
+
+def test_conversational_response_requires_no_llm(monkeypatch) -> None:
+    """The API should handle greetings without retrieval or generation."""
+    app = api_module.create_app(initialize=False)
+
+    retriever = sample_retriever()
+
+    monkeypatch.setattr(
+        api_module,
+        "create_policy_retriever",
+        lambda store, as_of, k: retriever,
+    )
+
+    with TestClient(app) as client:
+        app.state.vector_store = object()
+        app.state.llm = None
+
+        response = client.post(
+            "/ask",
+            json={
+                "question": "Hi",
+                "as_of": "2026-11-02",
+            },
+        )
+
+    assert response.status_code == 200
+
+    body = response.json()
+
+    assert body["status"] == "conversational"
+    assert "FinServe" in body["answer"]
+    assert body["sources"] == []

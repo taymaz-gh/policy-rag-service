@@ -1,4 +1,4 @@
-# 2. Policy Versioning and Applicability
+# 4. Policy Versioning and Applicability
 
 ## Problem
 

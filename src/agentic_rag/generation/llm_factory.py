@@ -22,7 +22,7 @@ def create_chat_model() -> BaseChatModel:
         return ChatGoogleGenerativeAI(
             model=model_name,
             temperature=0,
-            max_retries=2,
+            max_retries=int(os.getenv("RAG_LLM_MAX_RETRIES", "0")),
         )
 
     raise ValueError(f"Unsupported LLM provider: {provider}")

@@ -52,6 +52,43 @@ Mandatory authorization and compliance constraints must remain application-enfor
 
 **Decision:** Retain deterministic filtering for the initial implementation. Evaluate self-query retrieval as a later extension against explicitly labeled metadata-interpretation examples.
 
+
+### Configurable Retrieval Relevance Threshold
+
+**Module:** `src/agentic_rag/retrieval/vector_store.py`  
+**Function:** `create_policy_retriever()`
+
+The retriever supports two LangChain search strategies, selected by the optional `score_threshold` parameter.
+
+| Configuration | Search strategy | Behavior |
+|---|---|---|
+| `score_threshold=None` | `similarity` | Return the top-k date-applicable passages without a relevance cutoff |
+| `score_threshold=0.75` | `similarity_score_threshold` | Return only passages meeting the specified minimum relevance score |
+
+The threshold-enabled strategy uses normalized relevance scores, where higher values indicate greater similarity. These scores are not calibrated probabilities of factual correctness or answerability.
+
+Both search strategies retain deterministic effective-date filtering.
+
+**Design rationale**
+
+Dense similarity search returns the nearest available documents even when the question is unrelated to the knowledge base. This can provide irrelevant context to an LLM and increase the risk of unsupported answers.
+
+An optional relevance threshold allows the application to exclude weak retrieval matches and return no evidence when the threshold is not satisfied.
+
+When no documents are returned, `RAGService.ask()` produces `insufficient_evidence` without invoking the LLM.
+
+**Current limitations**
+
+- The default remains `score_threshold=None`; threshold filtering is not enabled automatically.
+- No threshold has been calibrated against labeled in-scope and out-of-scope questions.
+- High semantic similarity does not guarantee that evidence is sufficient to answer a question.
+- Similarity thresholds do not replace query-scope classification or factual grounding checks.
+- Threshold values may require recalibration when the embedding model, vector metric, or corpus changes.
+
+**Future evaluation**
+
+Representative policy questions, unsupported policy questions, greetings, and unrelated questions will be used to select and evaluate a threshold. False acceptance and false rejection rates will be monitored alongside retrieval relevance.
+
 ### Evaluation Requirements
 
 The retrieval system should be evaluated on:

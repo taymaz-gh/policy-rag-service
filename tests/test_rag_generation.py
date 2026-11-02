@@ -1,5 +1,7 @@
 """Tests for the guarded RAG generation service."""
 
+from unittest.mock import MagicMock
+
 import pytest
 from langchain_core.callbacks.manager import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
@@ -135,3 +137,100 @@ def test_unavailable_model_raises_when_fallback_disabled(monkeypatch):
 
     with pytest.raises(GoogleModelNotFoundError):
         service.ask("Who approves fee waivers?")
+
+
+def test_greeting_returns_conversational_without_retrieval() -> None:
+    """Greetings must not invoke retrieval or the LLM."""
+    retriever = MagicMock()
+    llm = MagicMock()
+
+    service = RAGService(retriever=retriever, llm=llm)
+
+    result = service.ask("Hi")
+
+    assert result.status == "conversational"
+    assert "FinServe" in result.answer
+    assert result.sources == []
+    retriever.invoke.assert_not_called()
+    llm.invoke.assert_not_called()
+
+
+def test_policy_question_still_uses_generation() -> None:
+    """Policy questions must continue through the RAG pipeline."""
+    service = make_service([sample_document()])
+
+    result = service.ask("Who approves fee waivers?")
+
+    assert result.status == "answered"
+    assert "[S1]" in result.answer
+
+
+def test_empty_retrieval_returns_insufficient_evidence() -> None:
+    """No evidence must produce abstention, not a fabricated answer."""
+    service = make_service([])
+
+    result = service.ask("What are FinServe's mortgage rates?")
+
+    assert result.status == "insufficient_evidence"
+    assert result.sources == []
+
+
+def test_sensitive_input_is_screened_before_greeting_route() -> None:
+    """A greeting containing PII must not bypass screening."""
+    service = make_service([sample_document()])
+
+    result = service.ask("Hi, my email is person@example.com")
+
+    assert result.status == "blocked"
+    assert result.sources == []
+
+
+def test_exact_abstention_signal_returns_insufficient_evidence() -> None:
+    """An explicit abstention must not require a citation."""
+    service = make_service(
+        [sample_document()],
+        response="INSUFFICIENT_EVIDENCE",
+    )
+
+    result = service.ask("How many days can an extension last?")
+
+    assert result.status == "insufficient_evidence"
+    assert "do not establish" in result.answer
+    assert "INSUFFICIENT_EVIDENCE" not in result.answer
+    assert len(result.sources) == 1
+
+
+def test_uncited_factual_answer_still_fails_validation() -> None:
+    """An unsupported factual answer must not bypass citations."""
+    service = make_service(
+        [sample_document()],
+        response="The extension lasts 30 days.",
+    )
+
+    result = service.ask("How many days can an extension last?")
+
+    assert result.status == "citation_validation_failed"
+
+
+def test_abstention_signal_embedded_in_answer_is_rejected() -> None:
+    """The abstention signal cannot bypass citation validation."""
+    service = make_service(
+        [sample_document()],
+        response="INSUFFICIENT_EVIDENCE. The extension lasts 30 days.",
+    )
+
+    result = service.ask("How many days can an extension last?")
+
+    assert result.status == "citation_validation_failed"
+
+
+def test_invalid_citation_remains_rejected_after_abstention_change() -> None:
+    """A fabricated source ID still fails validation."""
+    service = make_service(
+        [sample_document()],
+        response="Extensions last 30 days [S9].",
+    )
+
+    result = service.ask("How many days can an extension last?")
+
+    assert result.status == "citation_validation_failed"

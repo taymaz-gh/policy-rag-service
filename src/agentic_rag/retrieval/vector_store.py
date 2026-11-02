@@ -52,15 +52,27 @@ def create_policy_retriever(
     vector_store: Chroma,
     as_of: date,
     k: int = 3,
+    score_threshold: float | None = None,
 ):
-    """Create a LangChain retriever with date filtering."""
+    """Create a date-aware retriever with optional relevance filtering."""
     if k <= 0:
         raise ValueError("k must be positive")
 
+    search_kwargs = {
+        "k": k,
+        "filter": policy_date_filter(as_of),
+    }
+
+    if score_threshold is None:
+        search_type = "similarity"
+    else:
+        if not 0.0 <= score_threshold <= 1.0:
+            raise ValueError("score_threshold must be between 0 and 1")
+
+        search_type = "similarity_score_threshold"
+        search_kwargs["score_threshold"] = score_threshold
+
     return vector_store.as_retriever(
-        search_type="similarity",
-        search_kwargs={
-            "k": k,
-            "filter": policy_date_filter(as_of),
-        },
+        search_type=search_type,
+        search_kwargs=search_kwargs,
     )

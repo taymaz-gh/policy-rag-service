@@ -1,4 +1,4 @@
-# 1. Document Ingestion and Chunking
+# 2. Document Ingestion and Chunking
 
 ## Problem
 

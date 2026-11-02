@@ -1,4 +1,4 @@
-# 5. Security Guardrails and Sensitive-Content Screening
+# 7. Security Guardrails and Sensitive-Content Screening
 
 ## Problem
 

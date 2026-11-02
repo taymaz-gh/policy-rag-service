@@ -30,6 +30,7 @@ Status = Literal[
     "insufficient_evidence",
     "blocked",
     "citation_validation_failed",
+    "conversational",
 ]
 
 

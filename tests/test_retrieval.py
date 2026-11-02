@@ -1,6 +1,7 @@
 """Tests for policy-date retrieval filtering."""
 
 from datetime import date
+from unittest.mock import MagicMock
 
 import pytest
 from langchain_core.documents import Document
@@ -161,3 +162,58 @@ def test_chroma_policy_date_filter():
         actual = {doc.metadata["filename"] for doc in results}
 
         assert actual == expected, f"Date {as_of}: expected {expected}, got {actual}"
+
+
+def test_retriever_without_threshold_uses_similarity() -> None:
+    """The existing baseline must remain unchanged by default."""
+    store = MagicMock()
+
+    create_policy_retriever(
+        vector_store=store,
+        as_of=date(2026, 11, 2),
+        k=3,
+    )
+
+    store.as_retriever.assert_called_once()
+
+    kwargs = store.as_retriever.call_args.kwargs
+
+    assert kwargs["search_type"] == "similarity"
+    assert kwargs["search_kwargs"]["k"] == 3
+    assert "score_threshold" not in kwargs["search_kwargs"]
+    assert "filter" in kwargs["search_kwargs"]
+
+
+def test_retriever_with_threshold_uses_score_filtering() -> None:
+    """Enabling a threshold must preserve the policy-date filter."""
+    store = MagicMock()
+
+    create_policy_retriever(
+        vector_store=store,
+        as_of=date(2026, 11, 2),
+        k=3,
+        score_threshold=0.75,
+    )
+
+    kwargs = store.as_retriever.call_args.kwargs
+
+    assert kwargs["search_type"] == "similarity_score_threshold"
+    assert kwargs["search_kwargs"]["score_threshold"] == 0.75
+    assert kwargs["search_kwargs"]["k"] == 3
+    assert kwargs["search_kwargs"]["filter"] == policy_date_filter(date(2026, 11, 2))
+
+
+@pytest.mark.parametrize("threshold", [-0.1, 1.1])
+def test_invalid_relevance_threshold_is_rejected(
+    threshold: float,
+) -> None:
+    store = MagicMock()
+
+    with pytest.raises(ValueError, match="score_threshold"):
+        create_policy_retriever(
+            vector_store=store,
+            as_of=date(2026, 11, 2),
+            score_threshold=threshold,
+        )
+
+    store.as_retriever.assert_not_called()
