@@ -89,6 +89,35 @@ An empty retrieval result triggers a deterministic insufficient-evidence respons
 
 Nonempty retrieval does not automatically establish sufficient evidence. Later versions will evaluate relevance thresholds, answerability, and evidence sufficiency.
 
+
+## Graceful Degradation
+
+The RAG service supports retrieval-only operation when a generation model is not configured or a recognized provider-availability error prevents generation.
+
+**Implementation:** `src/agentic_rag/generation/rag_service.py`
+
+**Methods:** `RAGService.ask()`, `RAGService._retrieval_only_result()`
+
+The service distinguishes four principal outcomes:
+
+| Status | Meaning |
+|---|---|
+| `answered` | An LLM-generated answer passed source-identifier validation |
+| `retrieval_only` | Relevant evidence is available, but no generated answer is provided |
+| `insufficient_evidence` | No applicable documents were retrieved |
+| `blocked` | The request failed input screening |
+
+Retrieval-only output includes source filenames, page references, and extracted passages. It is explicitly identified as retrieved evidence rather than an AI-generated answer.
+
+Automatic fallback is configurable through `fallback_enabled`. Known model-unavailability and rate-limit errors trigger fallback when enabled. Unexpected programming errors are not silently suppressed.
+
+Provider failure logging records the exception type without logging customer questions, retrieved passages, API credentials, or raw provider error responses.
+
+This design separates retrieval availability from generation availability and allows limited service continuity during expected external model failures.
+
+Retrieval-only passages are not guaranteed to answer the user's question or establish policy correctness.
+
+
 ## Citation Strategy
 
 Each retrieved chunk will receive an application-generated source identifier.
