@@ -42,3 +42,11 @@ artifacts/
 # Ignoring coverage reports
 .coverage
 htmlcov/
+
+# Automatically generated evaluation runs
+/data/evaluation/runs/
+
+
+# Ignoring private files
+RAGme.txt
+sample.py
