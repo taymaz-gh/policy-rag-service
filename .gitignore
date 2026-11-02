@@ -42,3 +42,8 @@ artifacts/
 # Ignoring coverage reports
 .coverage
 htmlcov/
+
+
+# Ignoring private files
+RAGme.txt
+sample.py

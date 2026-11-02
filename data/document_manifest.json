@@ -1,0 +1,30 @@
+{
+    "fee_schedule_2025.pdf": {
+        "policy_id": "fee_schedule",
+        "document_type": "fee_schedule",
+        "version": "2025",
+        "effective_from": "2025-01-01",
+        "effective_to": "2025-12-31"
+    },
+    "fee_schedule_2026.pdf": {
+        "policy_id": "fee_schedule",
+        "document_type": "fee_schedule",
+        "version": "2026",
+        "effective_from": "2026-01-01",
+        "effective_to": null
+    },
+    "repayment_policy_2026.pdf": {
+        "policy_id": "repayment_policy",
+        "document_type": "repayment_policy",
+        "version": "2026",
+        "effective_from": "2026-01-01",
+        "effective_to": null
+    },
+    "customer_support_policy_2026.pdf": {
+        "policy_id": "customer_support_policy",
+        "document_type": "customer_support_policy",
+        "version": "2026",
+        "effective_from": "2026-01-01",
+        "effective_to": null
+    }
+}

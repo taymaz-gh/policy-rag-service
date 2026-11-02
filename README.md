@@ -76,3 +76,18 @@ Under active development. The current milestone establishes the Python package s
 ## Data
 
 The project will use public or synthetic example documents. No confidential company data or API credentials will be committed to the repository.
+
+
+
+## Documentation
+
+### Technical Design
+
+- [1. Document Ingestion](docs/1_document_ingestion.md)
+- [2. Policy Versioning](docs/2_policy_versioning.md)
+
+### Developer Guides
+
+- [Architecture](docs/developer/architecture.md)
+- [Project Structure](docs/developer/project_structure.md)
+- [Development Workflow](docs/developer/development_workflow.md)
