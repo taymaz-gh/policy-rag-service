@@ -1,5 +1,3 @@
-## Current status: MVP Completed
-
 # Policy RAG Service
 
 A financial-policy question-answering application built with LangChain, Chroma, Gemini, FastAPI, and Streamlit.
@@ -186,7 +184,6 @@ The offline test suite uses fake LLM responses and does not require Gemini crede
 
 ## Development Roadmap
 
-- GitHub Actions CI for automated linting, testing, and pull-request validation.
 - Continuous Deployment (CD) for automated application deployment after successful CI checks.
 - Expanded retrieval evaluation, factual-grounding tests, and citation-support assessment.
 - Stronger sensitive-content moderation, PII protection, and prompt-injection defenses.
