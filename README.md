@@ -1,5 +1,7 @@
 # Policy RAG Service
 
+[![CI](https://github.com/taymaz-gh/policy-rag-service/actions/workflows/ci.yml/badge.svg)](https://github.com/taymaz-gh/policy-rag-service/actions/workflows/ci.yml)
+
 A financial-policy question-answering application built with LangChain, Chroma, Gemini, FastAPI, and Streamlit.
 
 The project demonstrates Retrieval-Augmented Generation (RAG) over versioned financial-policy documents, with date-aware filtering, source references, basic sensitive-data screening, and retrieval-only fallback.
